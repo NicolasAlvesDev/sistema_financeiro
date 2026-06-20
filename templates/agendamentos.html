@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<header class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h4 fw-bold text-light m-0 title-spacing">
+        <i class="bi bi-calendar-check me-2 text-purple"></i>Contas Fixas
+    </h1>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-sm text-light border-secondary rounded-3">
+        Voltar
+    </a>
+</header>
+
+<section class="card-financeiro mb-4">
+    <h2 class="h6 text-light mb-3 fw-bold label-medium">
+        <i class="bi bi-plus-lg me-2 text-purple"></i>Agendar Nova Despesa Fixa
+    </h2>
+    
+    <form method="POST" action="{{ url_for('agendamentos') }}" class="row g-2" id="form-agendamento">
+        <div class="col-12">
+            <input type="text" name="descricao" class="form-control py-2" placeholder="Ex: Mensalidade" required>
+        </div>
+        <div class="col-6">
+            <input type="number" step="0.01" name="valor" class="form-control py-2" placeholder="Valor R$" required>
+        </div>
+        <div class="col-6">
+            <input type="number" name="dia_vencimento" min="1" max="31" class="form-control py-2" placeholder="Dia Venc. (1-31)" required>
+        </div>
+        <div class="col-12">
+            <select name="categoria_id" class="form-select py-2">
+                <option value="">Selecione a Categoria</option>
+                {% for cat in categorias %}
+                    <option value="{{ cat.id }}">{{ cat.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12 mt-3">
+            <button type="submit" id="btn-submit" class="btn btn-primary-gradient btn-sm w-100 fw-bold text-light py-2">
+                Salvar Agendamento
+            </button>
+        </div>
+    </form>
+</section>
+
+<section class="mt-4 mb-5">
+    <h2 class="h6 text-secundario mb-3 fw-bold label-medium px-1">
+        📅 CRONOGRAMA MENSAL
+    </h2>
+    
+    {% for a in agendamentos %}
+        <article class="card-financeiro d-flex justify-content-between align-items-center mb-2">
+            
+            <div class="d-flex flex-column gap-1">
+                <h3 class="fw-bold text-light fs-6 m-0">{{ a.descricao }}</h3>
+                <span class="text-mutado label-small">
+                    <i class="bi bi-tag me-1"></i>{{ a.categoria if a.categoria else 'Sem Categoria' }}
+                </span>
+                <span class="badge-financeira text-purple d-inline-block mt-1" style="font-size: 11px; width: fit-content; padding: 2px 6px;">
+                    <i class="bi bi-alarm me-1"></i>Todo dia {{ a.dia_vencimento }}
+                </span>
+            </div>
+
+            <div class="text-end d-flex flex-column align-items-end gap-2">
+                <span class="fw-bold text-danger fs-5">
+                    R$ {{ "{:.2f}".format(a.valor).replace(".", ",") }}
+                </span>
+                
+                <div class="d-flex align-items-center gap-2">
+                    
+                    {% if a.status == 'pago' %}
+                        <span class="badge bg-dark text-success border border-success label-small" style="font-size: 10px; border-radius: 4px;">
+                            <i class="bi bi-check2-circle me-1"></i>PAGO
+                        </span>
+                    {% else %}
+                        <span class="badge bg-dark text-warning border border-warning label-small" style="font-size: 10px; border-radius: 4px;">
+                            <i class="bi bi-hourglass-split me-1"></i>PENDENTE
+                        </span>
+                    {% endif %}
+                    
+                    {% if a.status != 'pago' %}
+                    <form action="{{ url_for('marcar_agendamento_pago', id=a.id) }}" method="POST" class="m-0" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerHTML='<i class=\'bi bi-check-lg\'></i>...';">
+                        <button type="submit" class="btn btn-sm btn-outline-success p-1" style="line-height: 1;" title="Marcar como Pago">
+                            <i class="bi bi-check-lg"></i> Pagar
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <form action="{{ url_for('deletar_agendamento', id=a.id) }}" method="POST" class="m-0">
+                        <button type="submit" class="btn btn-sm btn-outline-danger p-1" style="line-height: 1;" title="Excluir Conta" onclick="return confirm('Tem certeza que deseja excluir esta conta fixa?');">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </article>
+    {% else %}
+        <div class="card-financeiro text-center text-mutado py-4 label-medium">
+            Nenhum compromisso financeiro fixo agendado.
+        </div>
+    {% endfor %}
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const formAgendamento = document.getElementById('form-agendamento');
+        if (formAgendamento) {
+            formAgendamento.addEventListener('submit', function() {
+                const btn = document.getElementById('btn-submit');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Agendando...';
+            });
+        }
+    });
+</script>
+{% endblock %}

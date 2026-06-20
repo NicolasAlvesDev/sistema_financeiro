@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<header class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h4 fw-bold text-light m-0 title-spacing">
+        <i class="bi bi-receipt-cutoff me-2 text-purple"></i>Extrato Completo
+    </h1>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-sm text-light border-secondary rounded-3">
+        <i class="bi bi-arrow-left me-1"></i>Voltar
+    </a>
+</header>
+
+<section class="card-financeiro p-3 mb-4" aria-label="Filtros de transações">
+    <form method="GET" action="{{ url_for('extrato') }}" class="row g-2" id="form-filtros">
+        
+        <div class="col-6">
+            <label for="filtro_tipo" class="form-label text-secundario fw-bold label-small mb-1">Movimentação</label>
+            <select name="tipo" id="filtro_tipo" class="form-select">
+                <option value="">Todas</option>
+                <option value="receita" {% if filtro_tipo == 'receita' %}selected{% endif %}>Entradas</option>
+                <option value="despesa" {% if filtro_tipo == 'despesa' %}selected{% endif %}>Saídas</option>
+                <option value="transferencia" {% if filtro_tipo == 'transferencia' %}selected{% endif %}>Transferências</option>
+            </select>
+        </div>
+        
+        <div class="col-6">
+            <label for="filtro_conta" class="form-label text-secundario fw-bold label-small mb-1">Filtrar por Conta</label>
+            <select name="conta_id" id="filtro_conta" class="form-select">
+                <option value="">Todas as Contas</option>
+                {% for conta in contas %}
+                    <option value="{{ conta.id }}" {% if filtro_conta|string == conta.id|string %}selected{% endif %}>
+                        {{ conta.nome }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="col-12 mt-3">
+            <button type="submit" id="btn-filtrar" class="btn btn-primary-gradient btn-sm w-100 fw-bold text-light p-2">
+                <i class="bi bi-filter me-1"></i>Aplicar Filtros
+            </button>
+        </div>
+    </form>
+</section>
+
+<section class="mt-2 mb-5" aria-label="Histórico de transações">
+    {% for t in transacoes %}
+        <article class="card-financeiro d-flex justify-content-between align-items-center mb-2">
+            
+            <div class="d-flex flex-column gap-1">
+                <h2 class="fw-bold text-light fs-6 m-0">
+                    {% if t.conta_destino_id %}
+                        <i class="bi bi-arrow-left-right text-info me-2"></i>{{ t.descricao }}
+                    {% else %}
+                        {{ t.descricao }}
+                    {% endif %}
+                </h2>
+                
+                <div class="d-flex flex-wrap gap-2 mt-1 align-items-center">
+                    <span class="text-mutado label-small">
+                        {% if t.conta_destino_id %}
+                            <i class="bi bi-arrow-repeat me-1 text-info"></i><span class="text-info fw-bold">Transferência</span>
+                        {% else %}
+                            <i class="bi bi-tag me-1"></i>{{ t.categoria if t.categoria else 'Sem Categoria' }}
+                        {% endif %}
+                    </span>
+                    
+                    <span class="badge-financeira text-purple font-weight-normal" style="font-size: 11px; padding: 2px 6px;">
+                        <i class="bi bi-bank me-1"></i>
+                        {% if t.conta_destino_id %}
+                            {{ t.conta }} <span class="text-info mx-1">➔</span> {{ t.conta_destino }}
+                        {% else %}
+                            {{ t.conta if t.conta else 'Nenhuma' }}
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <time class="text-mutado d-block mt-1" style="font-size: 11px;" datetime="{{ t.data.strftime('%Y-%m-%d') }}">
+                    <i class="bi bi-calendar3 me-1"></i>{{ t.data.strftime('%d/%m/%Y') }}
+                </time>
+            </div>
+            
+            <div class="text-end">
+                <span class="fw-bold fs-5 {% if t.conta_destino_id %}text-info{% elif t.valor >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    {% if t.conta_destino_id %}
+                        R$ {{ "{:,.2f}".format(t.valor|abs).replace(",", "X").replace(".", ",").replace("X", ".") }}
+                    {% else %}
+                        {% if t.valor >= 0 %}+{% endif %} R$ {{ "{:,.2f}".format(t.valor).replace(",", "X").replace(".", ",").replace("X", ".") }}
+                    {% endif %}
+                </span>
+            </div>
+            
+        </article>
+    {% else %}
+        <div class="card-financeiro text-center text-mutado py-4 fw-bold fs-6">
+            Nenhuma transação encontrada com os filtros aplicados.
+        </div>
+    {% endfor %}
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const formFiltros = document.getElementById('form-filtros');
+        if (formFiltros) {
+            formFiltros.addEventListener('submit', function() {
+                const btn = document.getElementById('btn-filtrar');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Aplicando...';
+            });
+        }
+    });
+</script>
+{% endblock %}

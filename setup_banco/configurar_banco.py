@@ -1,0 +1,83 @@
+from database import obter_conexao
+
+
+def criar_estrutura_avancada():
+    print("Atualizando banco com módulos avançados...")
+    try:
+        conexao = obter_conexao()
+        cursor = conexao.cursor()
+
+        # Apaga garantindo a ordem correta das dependências
+        cursor.execute("""
+        DROP TABLE IF EXISTS orcamentos CASCADE;
+        DROP TABLE IF EXISTS transacoes CASCADE;
+        DROP TABLE IF EXISTS contas CASCADE;
+        DROP TABLE IF EXISTS categorias CASCADE;
+        """)
+
+        # Cria a nova estrutura. Note o IF NOT EXISTS na tabela de usuários!
+        cursor.execute("""
+        CREATE TABLE categorias (
+            id SERIAL PRIMARY KEY,
+            nome VARCHAR(50) NOT NULL,
+            tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('receita', 'despesa_fixa', 'despesa_variavel', 'aporte'))
+        );
+
+        CREATE TABLE contas (
+            id SERIAL PRIMARY KEY,
+            nome VARCHAR(50) NOT NULL,
+            tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('corrente', 'poupanca', 'investimento', 'dinheiro', 'passivo')),
+            saldo_inicial DECIMAL(10,2) DEFAULT 0.00
+        );
+
+        CREATE TABLE transacoes (
+            id SERIAL PRIMARY KEY,
+            descricao VARCHAR(100) NOT NULL,
+            valor DECIMAL(10,2) NOT NULL, 
+            data DATE NOT NULL,
+            categoria_id INT REFERENCES categorias(id) ON DELETE SET NULL,
+            conta_id INT REFERENCES contas(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id SERIAL PRIMARY KEY,
+            usuario VARCHAR(50) NOT NULL UNIQUE,
+            senha_hash VARCHAR(255) NOT NULL
+        );
+
+        CREATE TABLE orcamentos (
+            id SERIAL PRIMARY KEY,
+            categoria_id INT UNIQUE REFERENCES categorias(id) ON DELETE CASCADE,
+            limite DECIMAL(10,2) NOT NULL
+        );
+        """)
+
+        # Insere a massa de dados padrão atualizada
+        cursor.execute("""
+        INSERT INTO contas (nome, tipo, saldo_inicial) VALUES 
+        ('Conta Corrente', 'corrente', 0.00),
+        ('Reserva de Emergência', 'poupanca', 0.00),
+        ('Corretora Ações', 'investimento', 0.00),
+        ('Fatura Cartão', 'passivo', 0.00);
+
+        INSERT INTO categorias (id, nome, tipo) VALUES 
+        (1, 'Salário', 'receita'),
+        (2, 'Alimentação', 'despesa_variavel'),
+        (3, 'Aluguel/Moradia', 'despesa_fixa'),
+        (4, 'Aporte Futuro', 'aporte')
+        ON CONFLICT (id) DO NOTHING;
+
+        INSERT INTO orcamentos (categoria_id, limite) VALUES (2, 600.00) ON CONFLICT DO NOTHING;
+        """)
+
+        conexao.commit()
+        print("Tudo pronto! Banco reiniciado e atualizado com sucesso na nuvem!")
+    except Exception as e:
+        print(f"Erro ao atualizar banco: {e}")
+    finally:
+        cursor.close()
+        conexao.close()
+
+
+if __name__ == "__main__":
+    criar_estrutura_avancada()

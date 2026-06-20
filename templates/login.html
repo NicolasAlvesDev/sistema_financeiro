@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center align-items-center min-vh-80">
+    <section class="col-12 col-md-5 col-lg-4" aria-labelledby="login-title">
+        <div class="card-financeiro p-4">
+            
+            <header>
+                <h1 id="login-title" class="text-center mb-4 fw-bold text-light title-spacing h3">
+                    <i class="bi bi-wallet2 me-2 text-purple" aria-hidden="true"></i>
+                    <span class="net-worth-title fs-2">Swavy Finance</span>
+                </h1>
+            </header>
+            
+            <form method="POST" action="{{ url_for('login') }}" id="form-login">
+                
+                <div class="mb-3">
+                    <label for="usuario" class="form-label text-secundario label-small fw-bold">Usuário</label>
+                    <input type="text" name="usuario" id="usuario" class="form-control" placeholder="Digite seu usuário" required autocomplete="username">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="senha" class="form-label text-secundario label-small fw-bold">Senha</label>
+                    <input type="password" name="senha" id="senha" class="form-control" placeholder="Digite sua senha" required autocomplete="current-password">
+                </div>
+                
+                <button type="submit" id="btn-submit" class="btn btn-primary-gradient w-100 py-3 fw-bold text-light">
+                    Entrar no Sistema
+                </button>
+            </form>
+
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const formLogin = document.getElementById('form-login');
+        if (formLogin) {
+            formLogin.addEventListener('submit', function() {
+                const btn = document.getElementById('btn-submit');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Autenticando...';
+            });
+        }
+    });
+</script>
+{% endblock %}

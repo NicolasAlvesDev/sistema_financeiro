@@ -1,0 +1,184 @@
+/* ==========================================================================
+   Configurações Globais e Reset
+   ========================================================================== */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #000000; 
+    color: #ffffff; 
+}
+
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Usamos a tag body junto da classe para aumentar a especificidade e vencer o Bootstrap naturalmente */
+body.pb-5-custom {
+    padding-bottom: 100px;
+}
+
+.min-vh-80 {
+    min-height: 80vh;
+}
+
+/* ==========================================================================
+   Componentes de Texto e Títulos
+   ========================================================================== */
+.net-worth-title {
+    font-size: 2.8rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+}
+
+.title-spacing {
+    letter-spacing: -0.5px;
+}
+
+.label-small {
+    font-size: 12px;
+}
+
+.label-medium {
+    font-size: 13px;
+}
+
+/* Cores Customizadas */
+.text-mutado { color: #94a3b8; }
+.text-secundario { color: #cbd5e1; letter-spacing: 0.5px; }
+.text-purple { color: #a855f7; }
+
+/* Mantemos !important apenas em utilitários de cor críticos para garantir sobreposição de links do Bootstrap */
+.text-success { color: #10b981 !important; } 
+.text-danger { color: #f43f5e !important; }  
+.text-warning { color: #f59e0b !important; }
+
+/* ==========================================================================
+   Cards e Elementos Visuais
+   ========================================================================== */
+.card-financeiro {
+    background-color: #0b0c10;
+    border: 1px solid #2e165b; 
+    border-radius: 16px;
+    padding: 1.2rem;
+    margin-bottom: 1.2rem;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.08); 
+}
+
+.badge-financeira {
+    background-color: #120a2a;
+    border: 1px solid #4c1d95;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Barras de Progresso */
+.progress {
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    height: 12px;
+    border: 1px solid #262626;
+    overflow: hidden;
+}
+
+.progress-bar.bg-purple {
+    background-color: #a855f7;
+}
+
+/* ==========================================================================
+   Formulários (Inputs e Botões)
+   ========================================================================== */
+.form-control, 
+.form-select {
+    background-color: #0b0c10;
+    color: #ffffff;
+    border: 1px solid #2e165b;
+    border-radius: 10px;
+    padding: 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Placeholder precisa de um seletor específico */
+.form-control::placeholder {
+    color: #64748b;
+}
+
+.form-control:focus, 
+.form-select:focus {
+    background-color: #0b0c10;
+    color: #ffffff;
+    border-color: #a855f7;
+    box-shadow: 0 0 0 0.25rem rgba(168, 85, 247, 0.25);
+    outline: none;
+}
+
+.btn-primary-gradient {
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.btn-primary-gradient:hover {
+    opacity: 0.9;
+    color: #ffffff;
+}
+
+.btn-primary-gradient:active {
+    transform: scale(0.98);
+}
+
+/* ==========================================================================
+   Menu de Navegação Inferior (Mobile First)
+   ========================================================================== */
+nav.fixed-bottom {
+    background-color: #050508;
+    border-top: 1px solid #2e165b;
+    height: 70px;
+    z-index: 1050;
+}
+
+.nav-link-custom {
+    color: #94a3b8;
+    font-weight: 500;
+    font-size: 12px;
+    transition: color 0.2s ease;
+}
+
+.nav-link-custom:hover, 
+.nav-link-custom:focus {
+    color: #a855f7;
+}
+
+.nav-btn-center-container {
+    position: relative;
+    width: 60px;
+    height: 100%;
+}
+
+.btn-floating-center {
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+    border: none;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.6);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-floating-center:hover {
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.8);
+}

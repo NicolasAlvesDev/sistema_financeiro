@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<header class="d-flex flex-column mb-3 px-1 gap-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-mutado label-small fw-bold">Olá, {{ session.get('usuario_nome') }}</span>
+        <a href="{{ url_for('agendamentos') }}" class="text-decoration-none text-purple fw-bold label-small" aria-label="Ir para Contas Fixas">
+            <i class="bi bi-calendar-check me-1" aria-hidden="true"></i>Contas Fixas
+        </a>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center gap-2">
+        <form action="{{ url_for('sincronizar_banco') }}" method="POST" class="m-0" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerHTML='<i class=\'bi bi-hourglass-split me-1\'></i> Sincronizando...';">
+            <button type="submit" class="btn btn-sm bg-dark text-success border border-success rounded-3 fw-bold d-flex align-items-center gap-1 shadow-sm px-3 py-2" title="Puxar transações da Pluggy">
+                <i class="bi bi-arrow-repeat"></i> Sincronizar Banco
+            </button>
+        </form>
+
+        <a href="{{ url_for('nova_transacao') }}" class="btn btn-sm btn-primary-gradient text-light border-0 rounded-3 fw-bold d-flex align-items-center gap-1 shadow-sm px-3 py-2">
+            <i class="bi bi-plus-lg"></i> Lançar Manual
+        </a>
+    </div>
+</header>
+
+<nav class="card-financeiro py-2 px-3 my-2 d-flex justify-content-between align-items-center rounded-4" aria-label="Navegação de meses">
+    <a href="{{ url_for('dashboard', mes=mes_ant, ano=ano_ant) }}" class="btn btn-sm text-purple p-1" aria-label="Mês anterior">
+        <i class="bi bi-chevron-left fs-5 fw-bold" aria-hidden="true"></i>
+    </a>
+    
+    <h1 class="fw-bold text-light fs-6 text-uppercase tracking-wider m-0">
+        {{ nome_mes_exibido }}
+    </h1>
+    
+    <a href="{{ url_for('dashboard', mes=mes_prox, ano=ano_prox) }}" class="btn btn-sm text-purple p-1" aria-label="Próximo mês">
+        <i class="bi bi-chevron-right fs-5 fw-bold" aria-hidden="true"></i>
+    </a>
+</nav>
+
+<section class="text-center my-4" aria-label="Resumo do Patrimônio">
+    <h2 class="text-secundario text-uppercase fw-bold label-small m-0">Patrimônio Líquido Geral</h2>
+    <div class="net-worth-title my-1">
+        R$ {{ "{:,.2f}".format(saldo).replace(",", "X").replace(".", ",").replace("X", ".") }}
+    </div>
+    
+    <div class="d-flex justify-content-center gap-2 mt-3">
+        <span class="badge-financeira text-success">
+            <i class="bi bi-caret-up-fill me-1" aria-hidden="true"></i>Ativos: R$ {{ "{:,.2f}".format(ativos).replace(",", "X").replace(".", ",").replace("X", ".") }}
+        </span>
+        <span class="badge-financeira text-danger">
+            <i class="bi bi-caret-down-fill me-1" aria-hidden="true"></i>Passivos: R$ {{ "{:,.2f}".format(passivos).replace(",", "X").replace(".", ",").replace("X", ".") }}
+        </span>
+    </div>
+</section>
+
+<section class="card-financeiro mt-4" aria-label="Gráfico de Gastos">
+    <h2 class="h6 text-light mb-3 fw-bold label-medium">
+        <i class="bi bi-pie-chart-fill me-2 text-purple" aria-hidden="true"></i>VISÃO DE GASTOS DO MÊS
+    </h2>
+    {% if valores_grafico %}
+        <div class="chart-container">
+            <div id="graficoGastos" class="w-100"></div>
+        </div>
+    {% else %}
+        <p class="text-center text-mutado m-0 py-3 label-medium">Cadastre despesas para ver a distribuição gráfica.</p>
+    {% endif %}
+</section>
+
+<section class="card-financeiro mt-4" aria-label="Taxa de Aporte">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h6 text-light m-0 fw-bold label-medium">
+            <i class="bi bi-target me-2 text-purple" aria-hidden="true"></i>TAXA DE APORTE DO MÊS
+        </h2>
+        <span class="fw-bold text-purple fs-5">{{ taxa_aporte }}%</span>
+    </div>
+    <div class="progress mb-2" aria-valuenow="{{ taxa_aporte }}" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar bg-purple" role="progressbar" style="width: {{ taxa_aporte }}%;"></div>
+    </div>
+    <small class="text-mutado fw-bold label-small">Meta recomendada: manter acima de 20%</small>
+</section>
+
+{% if orcamentos %}
+<section class="mb-4 mt-4" aria-label="Teto de Gastos">
+    <h2 class="h6 text-secundario mb-3 fw-bold label-medium px-1">
+        <i class="bi bi-bar-chart-fill me-2 text-purple" aria-hidden="true"></i>TETO DE GASTOS MENSAL
+    </h2>
+    {% for orc in orcamentos %}
+    <article class="card-financeiro mb-2">
+        <div class="d-flex justify-content-between mb-2 fs-6">
+            <h3 class="h6 fw-bold text-light m-0">{{ orc.categoria }}</h3>
+            <span class="text-light fw-bold">
+                R$ {{ "{:.2f}".format(orc.gasto_atual).replace(".", ",") }} 
+                <span class="text-mutado fw-normal">/ R$ {{ "{:.2f}".format(orc.limite).replace(".", ",") }}</span>
+            </span>
+        </div>
+        <div class="progress" aria-valuenow="{{ orc.porcentagem }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar {% if orc.porcentagem > 90 %}bg-danger{% elif orc.porcentagem > 70 %}bg-warning{% else %}bg-success{% endif %}" 
+                 role="progressbar" 
+                 style="width: {{ orc.porcentagem }}%;">
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+</section>
+{% endif %}
+
+<section class="mt-4 mb-5" aria-label="Histórico do Mês">
+    <h2 class="h6 text-secundario mb-3 fw-bold label-medium px-1">
+        <i class="bi bi-list-ul me-2 text-purple" aria-hidden="true"></i>HISTÓRICO DO MÊS
+    </h2>
+    {% for t in transacoes %}
+    <article class="card-financeiro d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex flex-column gap-1">
+            <h3 class="fw-bold text-light fs-6 m-0">
+                {% if t.conta_destino_id %}
+                    <i class="bi bi-arrow-left-right text-info me-2" aria-hidden="true"></i>{{ t.descricao }}
+                {% else %}
+                    {{ t.descricao }}
+                {% endif %}
+            </h3>
+            <span class="text-mutado label-small">
+                {% if t.conta_destino_id %}
+                    <span class="text-info fw-bold">Transferência Interna</span>
+                {% else %}
+                    {{ t.categoria if t.categoria else 'Sem Categoria' }}
+                {% endif %}
+            </span>
+        </div>
+        
+        <div class="fw-bold fs-5 {% if t.conta_destino_id %}text-info{% elif t.valor >= 0 %}text-success{% else %}text-danger{% endif %}">
+            {% if t.conta_destino_id %}
+                R$ {{ "{:,.2f}".format(t.valor|abs).replace(",", "X").replace(".", ",").replace("X", ".") }}
+            {% else %}
+                {% if t.valor >= 0 %}+{% endif %} R$ {{ "{:,.2f}".format(t.valor).replace(",", "X").replace(".", ",").replace("X", ".") }}
+            {% endif %}
+        </div>
+    </article>
+    {% else %}
+    <div class="card-financeiro text-center text-mutado py-4 fw-bold fs-6">
+        Nenhuma transação registrada neste mês.
+    </div>
+    {% endfor %}
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    {% if valores_grafico %}
+    var options = {
+        chart: { type: 'donut', height: 260 },
+        colors: ['#a855f7', '#6366f1', '#10b981', '#f43f5e', '#f59e0b'],
+        labels: {{ labels_grafico|tojson }},
+        series: {{ valores_grafico|tojson }},
+        theme: { mode: 'dark' },
+        stroke: { show: false },
+        legend: { position: 'bottom', labels: { colors: '#ffffff' } },
+        dataLabels: { enabled: true, style: { colors: ['#ffffff'] } },
+        plotOptions: { pie: { donut: { background: 'transparent', labels: { show: false } } } }
+    };
+    
+    var chartContainer = document.querySelector("#graficoGastos");
+    if(chartContainer) {
+        var chart = new ApexCharts(chartContainer, options);
+        chart.render();
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}
