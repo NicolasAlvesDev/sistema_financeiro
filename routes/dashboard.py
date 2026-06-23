@@ -35,19 +35,24 @@ def index():
     }
     nome_mes_exibido = f"{meses_nome[mes_atual]} de {ano_atual}"
 
-    # 1. MATEMÁTICA CORRIGIDA: Separa Ativos reais do Limite do Cartão
+    # 1. MATEMÁTICA AVANÇADA: Fatiando os saldos por categoria
     cursor.execute("""
         SELECT 
-            COALESCE(SUM(CASE WHEN tipo IN ('corrente', 'poupanca', 'investimento', 'dinheiro') THEN saldo ELSE 0 END), 0) as ativos,
-            COALESCE(SUM(CASE WHEN tipo = 'passivo' THEN saldo ELSE 0 END), 0) as passivos
+            COALESCE(SUM(CASE WHEN tipo IN ('corrente', 'dinheiro') THEN saldo ELSE 0 END), 0) as saldo_disponivel,
+            COALESCE(SUM(CASE WHEN tipo IN ('poupanca', 'investimento') THEN saldo ELSE 0 END), 0) as saldo_investido,
+            COALESCE(SUM(CASE WHEN tipo = 'passivo' THEN saldo ELSE 0 END), 0) as faturas
         FROM contas
     """)
     patrimonio = cursor.fetchone()
-    ativos = float(patrimonio['ativos']) if patrimonio else 0.0
-    passivos = float(patrimonio['passivos']) if patrimonio else 0.0
 
-    # O Net Worth agora reflete o dinheiro real
-    net_worth = ativos - passivos
+    saldo_disponivel = float(
+        patrimonio['saldo_disponivel']) if patrimonio else 0.0
+    saldo_investido = float(
+        patrimonio['saldo_investido']) if patrimonio else 0.0
+    faturas = float(patrimonio['faturas']) if patrimonio else 0.0
+
+    # O Patrimônio Líquido é a soma de tudo que é seu, menos o que você deve
+    net_worth = (saldo_disponivel + saldo_investido) - abs(faturas)
 
     cursor.execute("""
         SELECT 
@@ -99,8 +104,18 @@ def index():
     cursor.close()
     conexao.close()
 
-    return render_template('index.html', saldo=net_worth, ativos=ativos, passivos=abs(passivos),
-                           taxa_aporte=taxa_aporte, orcamentos=orcamentos, transacoes=transacoes_mes,
-                           labels_grafico=labels_grafico, valores_grafico=valores_grafico,
-                           nome_mes_exibido=nome_mes_exibido, mes_ant=mes_anterior, ano_ant=ano_anterior,
-                           mes_prox=mes_proximo, ano_prox=ano_proximo)
+    return render_template('index.html', 
+                           saldo=net_worth, 
+                           saldo_disponivel=saldo_disponivel, 
+                           saldo_investido=saldo_investido, 
+                           faturas=faturas,
+                           taxa_aporte=taxa_aporte, 
+                           orcamentos=orcamentos, 
+                           transacoes=transacoes_mes,
+                           labels_grafico=labels_grafico, 
+                           valores_grafico=valores_grafico,
+                           nome_mes_exibido=nome_mes_exibido, 
+                           mes_ant=mes_anterior, 
+                           ano_ant=ano_anterior,
+                           mes_prox=mes_proximo, 
+                           ano_prox=ano_proximo)
