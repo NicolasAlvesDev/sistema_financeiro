@@ -5,7 +5,7 @@
     <h1 class="h4 fw-bold text-light m-0 title-spacing">
         <i class="bi bi-calendar-check me-2 text-purple"></i>Contas Fixas
     </h1>
-    <a href="{{ url_for('dashboard') }}" class="btn btn-sm text-light border-secondary rounded-3">
+    <a href="{{ url_for('dashboard.index') }}" class="btn btn-sm text-light border-secondary rounded-3">
         Voltar
     </a>
 </header>
@@ -15,7 +15,7 @@
         <i class="bi bi-plus-lg me-2 text-purple"></i>Agendar Nova Despesa Fixa
     </h2>
     
-    <form method="POST" action="{{ url_for('agendamentos') }}" class="row g-2" id="form-agendamento">
+    <form method="POST" action="{{ url_for('transacoes.agendamentos') }}" class="row g-2" id="form-agendamento">
         <div class="col-12">
             <input type="text" name="descricao" class="form-control py-2" placeholder="Ex: Mensalidade" required>
         </div>
@@ -77,14 +77,14 @@
                     {% endif %}
                     
                     {% if a.status != 'pago' %}
-                    <form action="{{ url_for('marcar_agendamento_pago', id=a.id) }}" method="POST" class="m-0" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerHTML='<i class=\'bi bi-check-lg\'></i>...';">
+                    <form action="{{ url_for('transacoes.marcar_agendamento_pago', id=a.id) }}" method="POST" class="m-0" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerHTML='<i class=\'bi bi-check-lg\'></i>...';">
                         <button type="submit" class="btn btn-sm btn-outline-success p-1" style="line-height: 1;" title="Marcar como Pago">
                             <i class="bi bi-check-lg"></i> Pagar
                         </button>
                     </form>
                     {% endif %}
                     
-                    <form action="{{ url_for('deletar_agendamento', id=a.id) }}" method="POST" class="m-0">
+                    <form action="{{ url_for('transacoes.deletar_agendamento', id=a.id) }}" method="POST" class="m-0">
                         <button type="submit" class="btn btn-sm btn-outline-danger p-1" style="line-height: 1;" title="Excluir Conta" onclick="return confirm('Tem certeza que deseja excluir esta conta fixa?');">
                             <i class="bi bi-trash"></i>
                         </button>

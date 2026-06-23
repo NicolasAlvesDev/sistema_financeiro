@@ -4,26 +4,31 @@
 <header class="d-flex flex-column mb-3 px-1 gap-3">
     <div class="d-flex justify-content-between align-items-center">
         <span class="text-mutado label-small fw-bold">Olá, {{ session.get('usuario_nome') }}</span>
-        <a href="{{ url_for('agendamentos') }}" class="text-decoration-none text-purple fw-bold label-small" aria-label="Ir para Contas Fixas">
-            <i class="bi bi-calendar-check me-1" aria-hidden="true"></i>Contas Fixas
-        </a>
+        <div class="d-flex gap-3">
+            <a href="{{ url_for('contas.listar') }}" class="text-decoration-none text-info fw-bold label-small" aria-label="Gerenciar Contas">
+                <i class="bi bi-bank me-1" aria-hidden="true"></i>Contas
+            </a>
+            <a href="{{ url_for('transacoes.agendamentos') }}" class="text-decoration-none text-purple fw-bold label-small" aria-label="Ir para Contas Fixas">
+                <i class="bi bi-calendar-check me-1" aria-hidden="true"></i>Fixas
+            </a>
+        </div>
     </div>
     
     <div class="d-flex justify-content-between align-items-center gap-2">
-        <form action="{{ url_for('sincronizar_banco') }}" method="POST" class="m-0" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerHTML='<i class=\'bi bi-hourglass-split me-1\'></i> Sincronizando...';">
+        <form action="{{ url_for('pluggy.sincronizar_banco') }}" method="POST" class="m-0" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerHTML='<i class=\'bi bi-hourglass-split me-1\'></i> Sincronizando...';">
             <button type="submit" class="btn btn-sm bg-dark text-success border border-success rounded-3 fw-bold d-flex align-items-center gap-1 shadow-sm px-3 py-2" title="Puxar transações da Pluggy">
                 <i class="bi bi-arrow-repeat"></i> Sincronizar Banco
             </button>
         </form>
 
-        <a href="{{ url_for('nova_transacao') }}" class="btn btn-sm btn-primary-gradient text-light border-0 rounded-3 fw-bold d-flex align-items-center gap-1 shadow-sm px-3 py-2">
+        <a href="{{ url_for('transacoes.nova_transacao') }}" class="btn btn-sm btn-primary-gradient text-light border-0 rounded-3 fw-bold d-flex align-items-center gap-1 shadow-sm px-3 py-2">
             <i class="bi bi-plus-lg"></i> Lançar Manual
         </a>
     </div>
 </header>
 
 <nav class="card-financeiro py-2 px-3 my-2 d-flex justify-content-between align-items-center rounded-4" aria-label="Navegação de meses">
-    <a href="{{ url_for('dashboard', mes=mes_ant, ano=ano_ant) }}" class="btn btn-sm text-purple p-1" aria-label="Mês anterior">
+    <a href="{{ url_for('dashboard.index', mes=mes_ant, ano=ano_ant) }}" class="btn btn-sm text-purple p-1" aria-label="Mês anterior">
         <i class="bi bi-chevron-left fs-5 fw-bold" aria-hidden="true"></i>
     </a>
     
@@ -31,7 +36,7 @@
         {{ nome_mes_exibido }}
     </h1>
     
-    <a href="{{ url_for('dashboard', mes=mes_prox, ano=ano_prox) }}" class="btn btn-sm text-purple p-1" aria-label="Próximo mês">
+    <a href="{{ url_for('dashboard.index', mes=mes_prox, ano=ano_prox) }}" class="btn btn-sm text-purple p-1" aria-label="Próximo mês">
         <i class="bi bi-chevron-right fs-5 fw-bold" aria-hidden="true"></i>
     </a>
 </nav>

@@ -5,13 +5,13 @@
     <h1 class="h4 fw-bold text-light m-0 title-spacing">
         <i class="bi bi-receipt-cutoff me-2 text-purple"></i>Extrato Completo
     </h1>
-    <a href="{{ url_for('dashboard') }}" class="btn btn-sm text-light border-secondary rounded-3">
+    <a href="{{ url_for('dashboard.index') }}" class="btn btn-sm text-light border-secondary rounded-3">
         <i class="bi bi-arrow-left me-1"></i>Voltar
     </a>
 </header>
 
 <section class="card-financeiro p-3 mb-4" aria-label="Filtros de transações">
-    <form method="GET" action="{{ url_for('extrato') }}" class="row g-2" id="form-filtros">
+    <form method="GET" action="{{ url_for('transacoes.extrato') }}" class="row g-2" id="form-filtros">
         
         <div class="col-6">
             <label for="filtro_tipo" class="form-label text-secundario fw-bold label-small mb-1">Movimentação</label>

@@ -37,18 +37,18 @@
     {% if session.get('usuario_id') %}
     <nav class="fixed-bottom d-flex justify-content-around align-items-center" aria-label="Navegação principal">
         
-        <a href="{{ url_for('dashboard') }}" class="nav-link-custom text-decoration-none py-2 text-center flex-grow-1">
+        <a href="{{ url_for('dashboard.index') }}" class="nav-link-custom text-decoration-none py-2 text-center flex-grow-1">
             <i class="bi bi-house-door fs-4 d-block" aria-hidden="true"></i>
             <span>Início</span>
         </a>
         
         <div class="nav-btn-center-container">
-            <a href="{{ url_for('nova_transacao') }}" class="btn-floating-center text-light text-decoration-none d-flex align-items-center justify-content-center" aria-label="Adicionar Nova Transação">
+            <a href="{{ url_for('transacoes.nova_transacao') }}" class="btn-floating-center text-light text-decoration-none d-flex align-items-center justify-content-center" aria-label="Adicionar Nova Transação">
                 <i class="bi bi-plus-lg fs-4" aria-hidden="true"></i>
             </a>
         </div>
         
-        <a href="{{ url_for('extrato') }}" class="nav-link-custom text-decoration-none py-2 text-center flex-grow-1">
+        <a href="{{ url_for('transacoes.extrato') }}" class="nav-link-custom text-decoration-none py-2 text-center flex-grow-1">
             <i class="bi bi-receipt-cutoff fs-4 d-block" aria-hidden="true"></i>
             <span>Extrato</span>
         </a>

@@ -2,12 +2,12 @@ from database import obter_conexao
 
 
 def criar_estrutura_avancada():
-    print("Atualizando banco com módulos avançados...")
+    print("Atualizando banco com módulos avançados e suporte Open Finance...")
     try:
         conexao = obter_conexao()
         cursor = conexao.cursor()
 
-        # Apaga garantindo a ordem correta das dependências
+        # Apaga garantindo a ordem correta das dependências (PostgreSQL Dialect)
         cursor.execute("""
         DROP TABLE IF EXISTS orcamentos CASCADE;
         DROP TABLE IF EXISTS transacoes CASCADE;
@@ -15,36 +15,51 @@ def criar_estrutura_avancada():
         DROP TABLE IF EXISTS categorias CASCADE;
         """)
 
-        # Cria a nova estrutura. Note o IF NOT EXISTS na tabela de usuários!
+        # 1. CATEGORIAS (Adicionado suporte a mais tipos se necessário)
         cursor.execute("""
         CREATE TABLE categorias (
             id SERIAL PRIMARY KEY,
             nome VARCHAR(50) NOT NULL,
-            tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('receita', 'despesa_fixa', 'despesa_variavel', 'aporte'))
+            tipo VARCHAR(30) NOT NULL CHECK (tipo IN ('receita', 'despesa_fixa', 'despesa_variavel', 'aporte', 'investimento'))
         );
+        """)
 
+        # 2. CONTAS (Adicionado a coluna 'saldo' para o saldo real dinâmico da API e 'pluggy_account_id')
+        cursor.execute("""
         CREATE TABLE contas (
             id SERIAL PRIMARY KEY,
             nome VARCHAR(50) NOT NULL,
             tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('corrente', 'poupanca', 'investimento', 'dinheiro', 'passivo')),
-            saldo_inicial DECIMAL(10,2) DEFAULT 0.00
+            saldo_inicial DECIMAL(10,2) DEFAULT 0.00,
+            saldo DECIMAL(10,2) DEFAULT 0.00,
+            pluggy_account_id VARCHAR(100) NULL
         );
+        """)
 
+        # 3. TRANSAÇÕES (Adicionado as colunas ausentes: conta_destino_id e as FKs corretas)
+        cursor.execute("""
         CREATE TABLE transacoes (
             id SERIAL PRIMARY KEY,
             descricao VARCHAR(100) NOT NULL,
             valor DECIMAL(10,2) NOT NULL, 
             data DATE NOT NULL,
             categoria_id INT REFERENCES categorias(id) ON DELETE SET NULL,
-            conta_id INT REFERENCES contas(id) ON DELETE CASCADE
+            conta_id INT REFERENCES contas(id) ON DELETE CASCADE,
+            conta_destino_id INT REFERENCES contas(id) ON DELETE SET NULL
         );
+        """)
 
+        # 4. USUÁRIOS
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
             id SERIAL PRIMARY KEY,
             usuario VARCHAR(50) NOT NULL UNIQUE,
             senha_hash VARCHAR(255) NOT NULL
         );
+        """)
 
+        # 5. ORÇAMENTOS
+        cursor.execute("""
         CREATE TABLE orcamentos (
             id SERIAL PRIMARY KEY,
             categoria_id INT UNIQUE REFERENCES categorias(id) ON DELETE CASCADE,
@@ -52,13 +67,13 @@ def criar_estrutura_avancada():
         );
         """)
 
-        # Insere a massa de dados padrão atualizada
+        # Mapeamento inicial da massa de dados padrão
         cursor.execute("""
-        INSERT INTO contas (nome, tipo, saldo_inicial) VALUES 
-        ('Conta Corrente', 'corrente', 0.00),
-        ('Reserva de Emergência', 'poupanca', 0.00),
-        ('Corretora Ações', 'investimento', 0.00),
-        ('Fatura Cartão', 'passivo', 0.00);
+        INSERT INTO contas (nome, tipo, saldo_inicial, saldo) VALUES 
+        ('Nubank', 'corrente', 0.00, 0.00),
+        ('Reserva de Emergência', 'poupanca', 0.00, 0.00),
+        ('Corretora Ações', 'investimento', 0.00, 0.00),
+        ('Fatura Cartão', 'passivo', 0.00, 0.00);
 
         INSERT INTO categorias (id, nome, tipo) VALUES 
         (1, 'Salário', 'receita'),
@@ -71,7 +86,7 @@ def criar_estrutura_avancada():
         """)
 
         conexao.commit()
-        print("Tudo pronto! Banco reiniciado e atualizado com sucesso na nuvem!")
+        print("🚀 Tudo pronto! Banco reinstalado na nuvem com suporte a saldos e chaves estrangeiras!")
     except Exception as e:
         print(f"Erro ao atualizar banco: {e}")
     finally:

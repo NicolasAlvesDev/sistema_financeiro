@@ -10,7 +10,7 @@
                 </h1>
             </header>
             
-            <form method="POST" action="{{ url_for('nova_transacao') }}" id="form-transacao">
+            <form method="POST" action="{{ url_for('transacoes.nova_transacao') }}" id="form-transacao">
                 
                 <div class="mb-3">
                     <label for="tipo_movimentacao" class="form-label text-secundario fw-bold label-small">Tipo de Movimentação</label>
@@ -94,7 +94,6 @@
         const inputDestino = document.getElementById('conta_destino_id');
 
         if(selectTipo) {
-            // O EventListener substitui a necessidade do onchange="verificarTipo()" no HTML
             selectTipo.addEventListener('change', function() {
                 if (this.value === 'transferencia') {
                     // Usamos classList para adicionar/remover o display:none do Bootstrap
