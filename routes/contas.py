@@ -17,21 +17,37 @@ def listar():
 
 @contas_bp.route('/nova', methods=['POST'])
 def nova():
-    nome = request.form['nome']
-    tipo = request.form['tipo']
-    saldo_inicial = float(request.form['saldo_inicial'] or 0.0)
+    try:
+        nome = request.form.get('nome')
+        tipo = request.form.get('tipo')
 
-    conexao = obter_conexao()
-    cursor = conexao.cursor()
-    cursor.execute("""
-        INSERT INTO contas (nome, tipo, saldo_inicial, saldo)
-        VALUES (%s, %s, %s, %s)
-    """, (nome, tipo, saldo_inicial, saldo_inicial))
-    conexao.commit()
-    cursor.close()
-    conexao.close()
+        saldo_str = request.form.get('saldo_inicial', '0').replace(',', '.')
+        saldo_inicial = float(saldo_str) if saldo_str else 0.0
 
-    flash(f'Conta {nome} criada com sucesso!', 'success')
+        limite_str = request.form.get('limite', '0').replace(',', '.')
+        limite = float(limite_str) if limite_str else 0.0
+
+        # Captura o dia de vencimento (padrão 10)
+        dia_vencimento = int(request.form.get('dia_vencimento') or 10)
+
+        conexao = obter_conexao()
+        cursor = conexao.cursor()
+        cursor.execute("""
+            INSERT INTO contas (nome, tipo, saldo_inicial, saldo, limite, dia_vencimento)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (nome, tipo, saldo_inicial, saldo_inicial, limite, dia_vencimento))
+        conexao.commit()
+        flash(f'Conta {nome} criada com sucesso!', 'success')
+
+    except Exception as e:
+        flash(f'Erro ao criar conta: {e}', 'danger')
+
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conexao' in locals():
+            conexao.close()
+
     return redirect(url_for('contas.listar'))
 
 
@@ -44,7 +60,6 @@ def deletar(id):
         conexao.commit()
         flash('Conta removida com sucesso!', 'success')
     except Exception as e:
-        # Trava de segurança do SQL (Não deixa excluir conta se tiver transação amarrada nela)
         flash('Não é possível excluir esta conta porque existem transações vinculadas a ela.', 'danger')
     finally:
         cursor.close()
@@ -54,24 +69,36 @@ def deletar(id):
 
 @contas_bp.route('/editar/<int:id>', methods=['POST'])
 def editar(id):
-    nome = request.form['nome']
-    tipo = request.form['tipo']
-    saldo = float(request.form['saldo'])
-
-    conexao = obter_conexao()
-    cursor = conexao.cursor()
     try:
+        nome = request.form.get('nome')
+        tipo = request.form.get('tipo')
+
+        saldo_str = request.form.get('saldo', '0').replace(',', '.')
+        saldo = float(saldo_str) if saldo_str else 0.0
+
+        limite_str = request.form.get('limite', '0').replace(',', '.')
+        limite = float(limite_str) if limite_str else 0.0
+
+        # Captura o dia de vencimento na edição
+        dia_vencimento = int(request.form.get('dia_vencimento') or 10)
+
+        conexao = obter_conexao()
+        cursor = conexao.cursor()
         cursor.execute("""
             UPDATE contas 
-            SET nome = %s, tipo = %s, saldo = %s 
+            SET nome = %s, tipo = %s, saldo = %s, limite = %s, dia_vencimento = %s 
             WHERE id = %s
-        """, (nome, tipo, saldo, id))
+        """, (nome, tipo, saldo, limite, dia_vencimento, id))
         conexao.commit()
         flash('Conta atualizada com sucesso!', 'success')
+
     except Exception as e:
         flash(f'Erro ao atualizar conta: {e}', 'danger')
+
     finally:
-        cursor.close()
-        conexao.close()
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conexao' in locals():
+            conexao.close()
 
     return redirect(url_for('contas.listar'))

@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from database import obter_conexao
+from datetime import date
 
 transacoes_bp = Blueprint('transacoes', __name__)
 
@@ -56,8 +57,12 @@ def nova_transacao():
         valor = float(request.form['valor'])
         tipo_mov = request.form['tipo_movimentacao']
 
+        # Garante que despesa e transferência entrem com sinal negativo no extrato
         if tipo_mov in ['despesa', 'transferencia']:
             valor = -abs(valor)
+        else:
+            # Garante que receita seja estritamente positiva
+            valor = abs(valor)
 
         data = request.form['data']
         categoria_id = request.form['categoria_id'] if request.form['categoria_id'] != "" else None
@@ -65,13 +70,34 @@ def nova_transacao():
         conta_destino_id = request.form['conta_destino_id'] if (
             tipo_mov == 'transferencia' and request.form['conta_destino_id'] != "") else None
 
-        cursor.execute("""
-            INSERT INTO transacoes (descricao, valor, data, categoria_id, conta_id, conta_destino_id)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (descricao, valor, data, categoria_id, conta_id, conta_destino_id))
-        conexao.commit()
-        cursor.close()
-        conexao.close()
+        try:
+            # 1. Insere o registro no extrato de transações
+            cursor.execute("""
+                INSERT INTO transacoes (descricao, valor, data, categoria_id, conta_id, conta_destino_id)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (descricao, valor, data, categoria_id, conta_id, conta_destino_id))
+
+            # 2. ATUALIZAÇÃO AUTOMÁTICA DE SALDOS NAS CONTAS
+            if tipo_mov == 'transferencia' and conta_destino_id:
+                # Se for transferência: tira da origem (valor é negativo) e põe no destino (sinal invertido)
+                cursor.execute(
+                    "UPDATE contas SET saldo = saldo + %s WHERE id = %s", (valor, conta_id))
+                cursor.execute(
+                    "UPDATE contas SET saldo = saldo + %s WHERE id = %s", (abs(valor), conta_destino_id))
+            else:
+                # Se for receita ou despesa comum: altera direto a conta vinculada
+                if conta_id:
+                    cursor.execute(
+                        "UPDATE contas SET saldo = saldo + %s WHERE id = %s", (valor, conta_id))
+
+            conexao.commit()
+            flash('Transação registrada com sucesso!', 'success')
+        except Exception as e:
+            flash(f'Erro ao registrar transação: {e}', 'danger')
+        finally:
+            cursor.close()
+            conexao.close()
+
         return redirect(url_for('dashboard.index'))
 
     cursor.execute("SELECT id, nome FROM categorias")

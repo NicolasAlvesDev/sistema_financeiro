@@ -8,6 +8,7 @@ from routes.dashboard import dashboard_bp
 from routes.pluggy import pluggy_bp
 from routes.transacoes import transacoes_bp
 from routes.contas import contas_bp
+from routes.faturas import faturas_bp
 
 # ==========================================================================
 # CONFIGURAÇÃO E AMBIENTE SEGURO
@@ -26,6 +27,7 @@ app.register_blueprint(dashboard_bp)
 app.register_blueprint(pluggy_bp)
 app.register_blueprint(transacoes_bp)
 app.register_blueprint(contas_bp)
+app.register_blueprint(faturas_bp)
 
 # ==========================================================================
 # INICIALIZAÇÃO LOCAL DO SERVIDOR
